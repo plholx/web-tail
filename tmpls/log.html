@@ -29,7 +29,7 @@
     </pre>
     <div id="status_bar">
         {{$F := .F}}
-        <div style="float: left;">当前日志文件: {{$F.Alias}}</div>
+        <div style="float: left;">当前日志文件: <label title="{{$F.Path}}">{{$F.Alias}}</label></div>
         <div style="float: right;">切换日志文件: 
             <select onchange="logfilechg(this)">
                 {{ range $k, $v := .FS }}
