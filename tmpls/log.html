@@ -52,6 +52,16 @@
         var autoScroll = true;
         var data = document.getElementById("fileData");
         var ol = document.getElementById("list");
+        // 清空过早的日志
+        var logLinesCount = 0;
+        var logLinesMax = 2000;
+        function clearEarlyLog(){
+            if(logLinesCount > logLinesMax){
+                var fli = document.querySelector("li:first-child");
+                fli.parentNode.removeChild(fli);
+                logLinesCount--;
+            }
+        }
         // 输出日志
         function append(data){
             if(data){
@@ -59,6 +69,10 @@
                 li.className = data.kind||"";
                 li.textContent = data.msg||data;
                 ol.appendChild(li);
+
+                logLinesCount++;
+                // 清空早期日志
+                clearEarlyLog();
             }
         }
         // autoScroll为true时将页面滚动到底部
