@@ -30,7 +30,14 @@
     <div id="status_bar">
         {{$F := .F}}
         <div style="float: left;">当前日志文件: <label title="{{$F.Path}}">{{$F.Alias}}</label></div>
-        <div style="float: right;">切换日志文件: 
+        <div style="float: right;">
+            显示最大行数:
+            <select id="maxLines" onchange="maxLinesChg(this)">
+                <option value="500">500</option>
+                <option value="1000">1000</option>
+                <option value="2000">2000</option>
+            </select>
+            切换日志文件: 
             <select onchange="logfilechg(this)">
                 {{ range $k, $v := .FS }}
                     <option value="{{$v.PathMd5}}" {{if eq $v.PathMd5 $F.PathMd5}} disabled="disabled" selected {{end}}>
@@ -53,14 +60,28 @@
         var data = document.getElementById("fileData");
         var ol = document.getElementById("list");
         // 清空过早的日志
+        var localStorageKey = "wt_max_lines";
         var logLinesCount = 0;
-        var logLinesMax = 2000;
+        var logLinesMax = ((localStorage.getItem(localStorageKey)||0)-0)||500;
+        document.getElementById("maxLines").value = logLinesMax;
+
         function clearEarlyLog(){
             if(logLinesCount > logLinesMax){
                 var fli = document.querySelector("li:first-child");
                 fli.parentNode.removeChild(fli);
                 logLinesCount--;
             }
+        }
+        // 修改页面显示最大行数
+        function maxLinesChg(t){
+            var v = t.value-0;
+            // 当调整后的最大行数小于当前最大行数时清屏
+            if( v < logLinesMax){
+                ol.innerHTML = "";
+                logLinesCount = 0;
+            }
+            logLinesMax = v;
+            localStorage.setItem(localStorageKey, v);
         }
         // 输出日志
         function append(data){
