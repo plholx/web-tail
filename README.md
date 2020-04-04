@@ -9,6 +9,7 @@ web-tail 当前包含功能如下：
 - [x] 在浏览器中实时查看日志内容
 - [x] 在浏览器中切换日志
 - [x] 在服务端通过修改 `log.li` 配置文件即可实时添加或删除日志文件，无需重启web-tail
+- [x] 支持tail -n参数
 
 # 依赖
 
@@ -64,4 +65,5 @@ setsid ./web-tail -addr=:8765 &> web-tail.log
 
 最后打浏览器进行访问，地址：http://ip:8765/log，按`ESC`键可退出与服务器的连接，也可在页面底部右下角切换选择不同的日志进行查看:
 
-![image-20200321191047844](assets/image-20200321191047844.png)
+![image-demo](assets/image-demo.png)
+
