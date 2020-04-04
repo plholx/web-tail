@@ -20,6 +20,7 @@
         }
         li[class*="sys"]{
             list-style: initial;
+            color: #a5a5a5;
         }
     </style>
 </head>
@@ -29,8 +30,17 @@
     </pre>
     <div id="status_bar">
         {{$F := .F}}
+        {{$TN := .TN}}
         <div style="float: left;">当前日志文件: <label title="{{$F.Path}}">{{$F.Alias}}</label></div>
         <div style="float: right;">
+            tail option -n:
+            <select id="tailOptionN" onchange="tailOptionNChg(this)">
+                <option value="" {{if eq "" $TN}} disabled="disabled" selected {{end}}>默认</option>
+                <option value="50" {{if eq "50" $TN}} disabled="disabled" selected {{end}}>50</option>
+                <option value="100" {{if eq "100" $TN}} disabled="disabled" selected {{end}}>100</option>
+                <option value="200" {{if eq "200" $TN}} disabled="disabled" selected {{end}}>200</option>
+                <option value="500" {{if eq "500" $TN}} disabled="disabled" selected {{end}}>500</option>
+            </select>
             显示最大行数:
             <select id="maxLines" onchange="maxLinesChg(this)">
                 <option value="500">500</option>
@@ -49,11 +59,38 @@
     </div>
     
     <script type="text/javascript">
+        // 获取url中的参数
+        function urlParam(name) {
+            var reg = new RegExp("(^|&)"+ name +"=([^&]*)(&|$)");
+            var r = decodeURI(window.location.search).substr(1).match(reg);
+            if(r){
+                return decodeURIComponent(r[2]);
+            } 
+            return undefined;
+        };
         var host = window.location.hostname;
         var port = window.location.port;
+        var urlParam = {
+            md5: urlParam("md5"),
+            n: urlParam("n"),
+        };
+        // 切换url
+        function reload(){
+            var url = "/log";
+            var md5 = urlParam.md5;
+            var n = urlParam.n;
+            if(md5){
+                url = url + "?md5="+md5 +(n?("&n="+n):"");
+            }else if(n){
+                url = url + "?n="+n;
+            }
+            window.location.href = url;
+        }
         // 切换日志文件
         function logfilechg(t){
-            window.location.href = "/log?md5="+t.value;
+            // window.location.href = "/log?md5="+t.value;
+            urlParam.md5 = t.value;
+            reload();
         }
         // 页面是否自动滚动标志
         var autoScroll = true;
@@ -72,6 +109,11 @@
                 logLinesCount--;
             }
         }
+        // 修改tail的option -n参数
+        function tailOptionNChg(t){
+            urlParam.n = t.value;
+            reload();
+        }
         // 修改页面显示最大行数
         function maxLinesChg(t){
             var v = t.value-0;
@@ -79,6 +121,7 @@
             if( v < logLinesMax){
                 ol.innerHTML = "";
                 logLinesCount = 0;
+                genSysMsg("清空屏幕");
             }
             logLinesMax = v;
             localStorage.setItem(localStorageKey, v);
@@ -141,17 +184,8 @@
         function genSysMsg(msg){
             return {msg: msg, kind: "sys"};
         }
-        // 获取url中的参数
-        function urlParam(name) {
-            var reg = new RegExp("(^|&)"+ name +"=([^&]*)(&|$)");
-            var r = decodeURI(window.location.search).substr(1).match(reg);
-            if(r){
-                return decodeURIComponent(r[2]);
-            } 
-            return undefined;
-        };
         // 创建websocket连接
-        var conn = new WebSocket("ws://" + host + (port ? (":" + port) : "") + "/ws"+(urlParam("md5")?("?md5="+urlParam("md5")):""));
+        var conn = new WebSocket("ws://" + host + (port ? (":" + port) : "") + "/ws"+window.location.search);
         // 连接打开事件
         conn.onopen = function () {
             console.log("Socket 已打开");

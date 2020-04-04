@@ -33,6 +33,8 @@ type Client struct {
 	ctxCancelFunc context.CancelFunc
 	// 需要读取的日志文件
 	logFile string
+	// tail 参数
+	tailOptions []string
 }
 
 // read 读取客户端websocket消息
@@ -65,10 +67,15 @@ func (c *Client) write(ctx context.Context) {
 		c.conn.Close()
 	}()
 	if c.logFile == "" {
-		c.conn.WriteJSON(genWsMsg(msg_kind_sys, "未指定日志文件"))
+		c.conn.WriteJSON(genWsMsg(msg_kind_sys, "未指定日志文件或日志文件不存在"))
 		return
 	}
-	cmd := exec.CommandContext(ctx, "tail", "-f", c.logFile)
+	if !FileExists(c.logFile) {
+		c.conn.WriteJSON(genWsMsg(msg_kind_sys, fmt.Sprintf("日志文件[%s]不存在", c.logFile)))
+		return
+	}
+	c.tailOptions = append(c.tailOptions, "-f", c.logFile)
+	cmd := exec.CommandContext(ctx, "tail", c.tailOptions...)
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		c.conn.WriteJSON(genWsMsg(msg_kind_sys, fmt.Sprintf("调用tail命令出错: %v", err)))
@@ -97,14 +104,14 @@ func genWsMsg(kind, msg string) map[string]string {
 }
 
 // serveWs 处理相应客户端的websocket请求
-func serveWs(w http.ResponseWriter, r *http.Request, logFile string) {
+func serveWs(w http.ResponseWriter, r *http.Request, logFile string, tailOptions []string) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println(err)
 		return
 	}
 	ctx, cancelFunc := context.WithCancel(context.Background())
-	client := &Client{conn: conn, ctxCancelFunc: cancelFunc, logFile: logFile}
+	client := &Client{conn: conn, ctxCancelFunc: cancelFunc, logFile: logFile, tailOptions: tailOptions}
 
 	go client.write(ctx)
 	go client.read()
