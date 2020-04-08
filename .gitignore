@@ -2,3 +2,4 @@
 *.txt
 web-tail
 .DS_Store
+bin/
