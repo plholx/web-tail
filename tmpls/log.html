@@ -17,6 +17,7 @@
             width: 100%;
             background-color: #f5f5f5;
             font-family: monospace;
+            border-top: 1px solid #968f8f;
         }
         li[class*="sys"]{
             list-style: initial;
@@ -33,7 +34,12 @@
         {{$TN := .TN}}
         <div style="float: left;">当前日志文件: <label title="{{$F.Path}}">{{$F.Alias}}</label></div>
         <div style="float: right;">
-            tail option -n:
+            theme:
+            <select id="theme" onchange="themeChg(this)">
+                <option value="white">white</option>
+                <option value="black">black</option>
+            </select>
+            &nbsp;&nbsp;tail option -n:
             <select id="tailOptionN" onchange="tailOptionNChg(this)">
                 <option value="" {{if eq "" $TN}} disabled="disabled" selected {{end}}>默认</option>
                 <option value="50" {{if eq "50" $TN}} disabled="disabled" selected {{end}}>50</option>
@@ -41,13 +47,13 @@
                 <option value="200" {{if eq "200" $TN}} disabled="disabled" selected {{end}}>200</option>
                 <option value="500" {{if eq "500" $TN}} disabled="disabled" selected {{end}}>500</option>
             </select>
-            显示最大行数:
+            &nbsp;&nbsp;显示最大行数:
             <select id="maxLines" onchange="maxLinesChg(this)">
                 <option value="500">500</option>
                 <option value="1000">1000</option>
                 <option value="2000">2000</option>
             </select>
-            切换日志文件: 
+            &nbsp;&nbsp;切换日志文件: 
             <select onchange="logfilechg(this)">
                 {{ range $k, $v := .FS }}
                     <option value="{{$v.PathMd5}}" {{if eq $v.PathMd5 $F.PathMd5}} disabled="disabled" selected {{end}}>
@@ -96,6 +102,9 @@
         var autoScroll = true;
         var data = document.getElementById("fileData");
         var ol = document.getElementById("list");
+        // 主题
+        var localStorageThemeKey = "wt_theme";
+        document.getElementById("theme").value = localStorage.getItem(localStorageThemeKey)||"white";
         // 清空过早的日志
         var localStorageKey = "wt_max_lines";
         var logLinesCount = 0;
@@ -113,6 +122,21 @@
         function tailOptionNChg(t){
             urlParam.n = t.value;
             reload();
+        }
+        // 修改主题
+        function themeChg(t){
+            var v = t.value;
+            var cacheTheme = localStorage.getItem(localStorageThemeKey);
+            if(cacheTheme == v){
+                return;
+            }
+            if(v == "black"){
+                document.getElementsByTagName("html")[0].style.filter="invert(1)";
+                document.getElementsByTagName("body")[0].style.backgroundColor="#000000";
+            }else if(v == "white"){
+                document.getElementsByTagName("html")[0].style.filter="invert(0)";
+                document.getElementsByTagName("body")[0].style.backgroundColor="#ffffff";
+            }
         }
         // 修改页面显示最大行数
         function maxLinesChg(t){
