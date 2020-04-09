@@ -65,6 +65,18 @@
     </div>
     
     <script type="text/javascript">
+        // 常用色值 同bootstrap4
+        var colors = {
+            primary: '#007bff',
+            secondary: '#6c757d',
+            success: '#28a745',
+            danger: '#dc3545',
+            warning: '#ffc107',
+            info: '#17a2b8',
+            light: '#f8f9fa',
+            dark: '#343a40',
+            white: '#fff',
+        };
         // 获取url中的参数
         function urlParam(name) {
             var reg = new RegExp("(^|&)"+ name +"=([^&]*)(&|$)");
@@ -150,12 +162,31 @@
             logLinesMax = v;
             localStorage.setItem(localStorageKey, v);
         }
+        // 日志颜色
+        var errReg = /err[:\]]|error|exception|错误|异常/ig;
+        var warnReg = /warn/ig;
+        function logColor(logContent){
+            if(logContent){
+                if(errReg.test(logContent)){
+                    return colors.danger;
+                }else if(warnReg.test(logContent)){
+                    return colors.warning;
+                }
+            }
+            return "";
+        }
         // 输出日志
         function append(data){
             if(data){
                 var li = document.createElement('li');
                 li.className = data.kind||"";
                 li.textContent = data.msg||data;
+                if(data.kind == "log"){
+                    var c = logColor(data.msg||data);
+                    if(c){
+                        li.style.color = c;
+                    }
+                }
                 ol.appendChild(li);
 
                 logLinesCount++;
