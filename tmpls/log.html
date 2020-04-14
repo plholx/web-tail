@@ -193,7 +193,8 @@
         document.getElementById("maxLines").value = logLinesMax;
 
         function clearEarlyLog(){
-            if(logLinesCount > logLinesMax){
+            // 控制autoScroll=true时再清理较早的日志，避免滚动条一直滚动
+            while(logLinesCount > logLinesMax && autoScroll){
                 var fli = document.querySelector("li:first-child");
                 fli.parentNode.removeChild(fli);
                 logLinesCount--;
@@ -226,7 +227,7 @@
             if( v < logLinesMax){
                 ol.innerHTML = "";
                 logLinesCount = 0;
-                genSysMsg("清空屏幕");
+                append(genSysMsg("清空屏幕"));
             }
             logLinesMax = v;
             localStorage.setItem(localStorageKey, v);
