@@ -290,6 +290,7 @@
                 // 清空早期日志
                 clearEarlyLog();
             }
+            scrollToBottom();
         }
         // autoScroll为true时将页面滚动到底部
         function scrollToBottom(){
@@ -348,7 +349,6 @@
         }
         conn.onmessage = function (evt) {
             append(eval("("+evt.data+")"));
-            scrollToBottom();
         }
         // 发生了错误事件
         conn.onerror = function () {
