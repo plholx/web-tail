@@ -257,13 +257,16 @@
             localStorage.setItem(localStorageKey, v);
         }
         // 日志颜色
-        var errReg = /err[:\]]|error|exception|错误|异常/ig;
-        var warnReg = /warn/ig;
+        var errReg = /err[:\]]|error|exception|错误|异常/i;
+        var warnReg = /warn/i;
         function logColor(logContent){
             if(logContent){
                 if(errReg.test(logContent)){
+                    // 通过去掉正则g标志来解决一次true一次false的问题
+                    // errReg.lastIndex = 0;
                     return colors.danger;
                 }else if(warnReg.test(logContent)){
+                    // warnReg.lastIndex = 0;
                     return colors.warning;
                 }
             }
